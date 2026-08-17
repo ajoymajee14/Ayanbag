@@ -6,14 +6,12 @@ interface NavbarProps {
   cartCount: number;
   onOpenCart: () => void;
   onOpenSearch: () => void;
-  onOpenAdmin?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   cartCount,
   onOpenCart,
-  onOpenSearch,
-  onOpenAdmin
+  onOpenSearch
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -107,19 +105,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Admin Portal Switcher */}
-          {onOpenAdmin && (
-            <button
-              id="btn-nav-admin-portal"
-              onClick={onOpenAdmin}
-              aria-label="Admin Dashboard"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900 border border-[#D4AF37]/50 text-[#D4AF37] text-[11px] font-mono font-bold hover:bg-[#D4AF37] hover:text-black transition-all duration-200 shadow-sm cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Admin HQ</span>
-            </button>
-          )}
-
           {/* Direct WhatsApp Order Button */}
           <a
             id="btn-nav-whatsapp-direct"
@@ -165,19 +150,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-3 border-t border-white/10 flex flex-col gap-2.5">
-            {onOpenAdmin && (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenAdmin();
-                }}
-                className="flex items-center justify-center gap-2 bg-[#D4AF37] text-black font-bold text-xs py-2.5 rounded-lg shadow-md"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Open Admin Portal & Dashboard</span>
-              </button>
-            )}
-
             <a
               id="mobile-call-store-link"
               href={`tel:${STORE_INFO.phone}`}

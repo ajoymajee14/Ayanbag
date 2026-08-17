@@ -1,8 +1,12 @@
 import React from 'react';
-import { MapPin, Phone, Mail, MessageCircle, ShieldCheck, CreditCard, Lock, Sparkles, Clock, Check } from 'lucide-react';
+import { MapPin, Phone, Mail, MessageCircle, ShieldCheck, CreditCard, Lock, Sparkles, Clock, Check, KeyRound } from 'lucide-react';
 import { STORE_INFO } from '../data/products';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenAdmin?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
   return (
     <footer id="main-footer" className="bg-[#0D0D0D] border-t border-white/10 text-[#A1A1AA] text-xs">
       
@@ -97,7 +101,18 @@ export const Footer: React.FC = () => {
               <li><a href="#promo-offer-section" className="hover:text-[#D4AF37] transition-colors">Shipping & Returns</a></li>
               <li><a href="#whatsapp-ordering" className="hover:text-[#D4AF37] transition-colors">Cash On Delivery Terms</a></li>
               <li><a href="#reviews" className="hover:text-[#D4AF37] transition-colors">Owner Testimonials</a></li>
-              <li><a href="#announcement-bar" className="hover:text-[#D4AF37] transition-colors">Terms of Service</a></li>
+              {onOpenAdmin && (
+                <li className="pt-1">
+                  <button
+                    id="link-footer-staff-login"
+                    onClick={onOpenAdmin}
+                    className="hover:text-[#D4AF37] text-zinc-400 transition-colors inline-flex items-center gap-1.5 cursor-pointer font-medium"
+                  >
+                    <Lock className="w-3 h-3 text-[#D4AF37]" />
+                    <span>Staff Admin Login</span>
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -167,7 +182,7 @@ export const Footer: React.FC = () => {
             </p>
           </div>
 
-          {/* Secure Payment Badges */}
+          {/* Secure Payment Badges & Admin Portal Link */}
           <div className="flex flex-wrap items-center justify-center gap-2 text-[10px]">
             <span className="bg-white/5 border border-white/10 px-2.5 py-1 rounded text-zinc-300 font-mono font-semibold">
               COD
@@ -181,6 +196,18 @@ export const Footer: React.FC = () => {
             <span className="bg-white/5 border border-white/10 px-2.5 py-1 rounded text-[#D4AF37] font-semibold flex items-center gap-1">
               <Lock className="w-3 h-3" /> 256-Bit SSL
             </span>
+
+            {onOpenAdmin && (
+              <button
+                id="btn-footer-admin-login"
+                onClick={onOpenAdmin}
+                className="bg-slate-900/90 border border-slate-700/80 hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/10 text-slate-400 hover:text-[#D4AF37] px-2.5 py-1 rounded font-mono text-[10px] flex items-center gap-1.5 transition-colors cursor-pointer ml-1"
+                title="Management Admin Login (Password Protected)"
+              >
+                <KeyRound className="w-3 h-3 text-[#D4AF37]" />
+                <span>Admin Login</span>
+              </button>
+            )}
           </div>
 
         </div>

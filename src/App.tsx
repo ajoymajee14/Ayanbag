@@ -26,6 +26,7 @@ import { AdminStoreSettings } from './components/admin/AdminStoreSettings';
 import { ShippingInvoiceModal } from './components/admin/ShippingInvoiceModal';
 import { WhatsAppTrackingModal } from './components/admin/WhatsAppTrackingModal';
 import { ProductFormModal } from './components/admin/ProductFormModal';
+import { AdminLoginModal } from './components/admin/AdminLoginModal';
 
 // Initial Data
 import { PRODUCTS, STORE_INFO } from './data/products';
@@ -41,16 +42,30 @@ import {
   OrderStatus, 
   InquiryStatus 
 } from './types';
-import { Sparkles, Store, ShieldAlert, ArrowLeftRight } from 'lucide-react';
 
 export default function App() {
-  // Mode switch: 'storefront' | 'admin'
+  // Password protection state for Admin Portal
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('ayanbag_admin_auth') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [isAdminLoginModalOpen, setIsAdminLoginModalOpen] = useState(false);
+
+  // Mode switch: 'storefront' | 'admin' (defaults to storefront)
   const [currentMode, setCurrentMode] = useState<'storefront' | 'admin'>(() => {
     try {
-      const saved = localStorage.getItem('ayanbag_mode');
-      return (saved as 'storefront' | 'admin') || 'admin';
+      const isAuth = localStorage.getItem('ayanbag_admin_auth') === 'true';
+      const savedMode = localStorage.getItem('ayanbag_mode');
+      if (isAuth && savedMode === 'admin') {
+        return 'admin';
+      }
+      return 'storefront';
     } catch {
-      return 'admin';
+      return 'storefront';
     }
   });
 
@@ -126,6 +141,7 @@ export default function App() {
   // Sync to local storage
   useEffect(() => {
     try {
+      localStorage.setItem('ayanbag_admin_auth', isAdminAuthenticated ? 'true' : 'false');
       localStorage.setItem('ayanbag_mode', currentMode);
       localStorage.setItem('ayanbag_products', JSON.stringify(products));
       localStorage.setItem('ayanbag_orders', JSON.stringify(orders));
@@ -136,7 +152,32 @@ export default function App() {
     } catch (e) {
       console.error('Storage sync error:', e);
     }
-  }, [currentMode, products, orders, coupons, inquiries, storeInfo, cartItems]);
+  }, [isAdminAuthenticated, currentMode, products, orders, coupons, inquiries, storeInfo, cartItems]);
+
+  // Handle Admin Portal Access (Footer button trigger)
+  const handleOpenAdminPortal = () => {
+    if (isAdminAuthenticated) {
+      setCurrentMode('admin');
+    } else {
+      setIsAdminLoginModalOpen(true);
+    }
+  };
+
+  const handleAdminLoginSuccess = () => {
+    setIsAdminAuthenticated(true);
+    setIsAdminLoginModalOpen(false);
+    setCurrentMode('admin');
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminAuthenticated(false);
+    setCurrentMode('storefront');
+    try {
+      localStorage.removeItem('ayanbag_admin_auth');
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Handlers for Storefront Cart
   const totalCartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -286,39 +327,13 @@ export default function App() {
 
   return (
     <>
-      {/* Global Mode Switcher Floating Pill */}
-      <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-black/90 border border-[#D4AF37]/50 p-1.5 rounded-full shadow-2xl backdrop-blur-xl">
-        <button
-          onClick={() => setCurrentMode('storefront')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-            currentMode === 'storefront'
-              ? 'bg-[#D4AF37] text-black shadow-lg'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <Store className="w-3.5 h-3.5" />
-          <span>Customer Store</span>
-        </button>
-
-        <button
-          onClick={() => setCurrentMode('admin')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-            currentMode === 'admin'
-              ? 'bg-[#D4AF37] text-black shadow-lg'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Admin Portal</span>
-        </button>
-      </div>
-
       {/* RENDER ADMIN PORTAL OR STOREFRONT */}
-      {currentMode === 'admin' ? (
+      {currentMode === 'admin' && isAdminAuthenticated ? (
         <AdminLayout
           activeTab={adminActiveTab}
           onSelectTab={(tab) => setAdminActiveTab(tab)}
           onSwitchToStorefront={() => setCurrentMode('storefront')}
+          onLogout={handleAdminLogout}
           onOpenAddWatchModal={handleOpenAddProduct}
           storeInfo={storeInfo}
           orders={orders}
@@ -392,12 +407,11 @@ export default function App() {
           {/* 1. Top Announcement Bar */}
           {storeInfo.enableAnnouncement !== false && <AnnouncementBar />}
 
-          {/* 2. Premium Sticky Navigation */}
+          {/* 2. Premium Sticky Navigation (Header without Admin button) */}
           <Navbar
             cartCount={totalCartCount}
             onOpenCart={() => setIsCartOpen(true)}
             onOpenSearch={() => setIsSearchOpen(true)}
-            onOpenAdmin={() => setCurrentMode('admin')}
           />
 
           {/* Main Single Page Sections */}
@@ -435,8 +449,8 @@ export default function App() {
 
           </main>
 
-          {/* 9. Luxury Footer */}
-          <Footer />
+          {/* 9. Luxury Footer with Password-Protected Admin Portal Trigger */}
+          <Footer onOpenAdmin={handleOpenAdminPortal} />
 
           {/* Storefront Modals & Drawers */}
           <CartDrawer
@@ -471,7 +485,14 @@ export default function App() {
         </div>
       )}
 
-      {/* Shared Admin Global Modals (accessible anywhere) */}
+      {/* Admin Login Authentication Modal */}
+      <AdminLoginModal
+        isOpen={isAdminLoginModalOpen}
+        onClose={() => setIsAdminLoginModalOpen(false)}
+        onSuccess={handleAdminLoginSuccess}
+      />
+
+      {/* Shared Admin Global Modals */}
       <ProductFormModal
         product={editingProduct}
         isOpen={isProductFormOpen}

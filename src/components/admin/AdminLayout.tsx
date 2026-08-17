@@ -27,6 +27,7 @@ interface AdminLayoutProps {
   activeTab: AdminTab;
   onSelectTab: (tab: AdminTab) => void;
   onSwitchToStorefront: () => void;
+  onLogout?: () => void;
   onOpenAddWatchModal: () => void;
   storeInfo: StoreInfo;
   orders: Order[];
@@ -39,6 +40,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   activeTab,
   onSelectTab,
   onSwitchToStorefront,
+  onLogout,
   onOpenAddWatchModal,
   storeInfo,
   orders,
@@ -219,11 +221,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
                 <div className="pt-1 border-t border-slate-800">
                   <button
-                    onClick={onSwitchToStorefront}
+                    onClick={() => {
+                      if (onLogout) onLogout();
+                      else onSwitchToStorefront();
+                    }}
                     className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-rose-950/40 text-rose-400 text-left cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Exit Admin Session</span>
+                    <span>Lock & Exit Admin</span>
                   </button>
                 </div>
               </div>
